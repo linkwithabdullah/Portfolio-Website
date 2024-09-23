@@ -41,45 +41,53 @@
 
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data
+    // Retrieve and sanitize form data
     $name = htmlspecialchars(trim($_POST['name']));
     $email = htmlspecialchars(trim($_POST['email']));
     $phone = htmlspecialchars(trim($_POST['phone']));
     $message = htmlspecialchars(trim($_POST['message']));
 
-    // Validate email
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "Invalid email format";
-        exit;
-    }
+    // Sender Email and Name 
+    $from = $email;  // Use the user's email address as the sender
+    $fromName = stripslashes($name);
 
-    // Email details
-    $to = "abdullahkhan84328@gmail.com";  // Your email address
-    $subject = "New Contact Form Submission";
-    $headers = "From: " . $email . "\r\n" .
-               "Reply-To: " . $email . "\r\n" .
-               "Content-Type: text/html; charset=UTF-8\r\n";
+    // Recipient Email Address 
+    $to = 'abdullahkhan84328@gmail.com';  // Your email
 
-    // Email body
+    // Email Subject 
+    $emailSubject = 'New Message from Contact Form';
+
+    // Email Header 
+    $headers  = 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+    $headers .= 'From: ' . $fromName . ' <' . $from . '>' . "\r\n";
+    $headers .= 'Reply-To: ' . $email . "\r\n";  // Adding reply-to
+
+    // HTML message body
     $body = "
     <html>
     <head>
-      <title>Contact Form Submission</title>
+      <title>$emailSubject</title>
     </head>
     <body>
-      <h2>New Contact Form Submission</h2>
       <p><strong>Name:</strong> {$name}</p>
       <p><strong>Email:</strong> {$email}</p>
       <p><strong>Phone:</strong> {$phone}</p>
-      <p><strong>Message:</strong> {$message}</p>
+      <p><strong>Message:</strong><br>{$message}</p>
     </body>
     </html>";
 
+    // Validate the input fields
+    if (empty($name) || empty($message) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo 'Please fill all the fields correctly and try again.';
+        exit;
+    }
+
     // Send email
-    if (mail($to, $subject, $body, $headers)) {
-        echo "Message sent successfully!";
+    if (mail($to, $emailSubject, $body, $headers)) {
+        echo 'Thank You! We will be in touch with you very soon.';
     } else {
-        echo "Failed to send message. Please try again later.";
+        echo 'Sorry, there was an error sending your message. Please try again later.';
     }
 }
 ?>
